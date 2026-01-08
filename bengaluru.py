@@ -149,3 +149,39 @@ plt.xlabel("Bathrooms")
 plt.ylabel("Price (Lakhs)")
 plt.title("Bathrooms vs Price")
 plt.show()
+
+
+
+print("\n--- Enter House Details for Prediction ---")
+
+user_sqft = float(input("Enter total sqft: "))
+user_bath = int(input("Enter number of bathrooms: "))
+user_bhk = int(input("Enter number of BHK: "))
+user_location = input("Enter location: ")
+
+# Handle unseen locations
+if user_location not in top_locations:
+    user_location = 'Other'
+
+# Base input
+user_data = pd.DataFrame(
+    [[user_sqft, user_bath, user_bhk]],
+    columns=['total_sqft', 'bath', 'bhk']
+)
+
+# Add missing location columns
+X_columns = X.columns
+for col in X_columns:
+    if col.startswith("location_"):
+        user_data[col] = 1 if col == f"location_{user_location}" else 0
+
+# Ensure column order matches training data
+user_data = user_data.reindex(columns=X_columns, fill_value=0)
+
+# Scale input
+user_data_scaled = scaler.transform(user_data)
+
+# Predict
+predicted_price = model.predict(user_data_scaled)[0]
+
+print(f"\n🏠 Estimated House Price: ₹ {round(predicted_price, 2)} Lakhs")
